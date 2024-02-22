@@ -5,14 +5,10 @@ import com.fdapn.dao.TokenRepository;
 import com.fdapn.dao.UserRepository;
 import com.fdapn.exception.InvalidPasswordException;
 import com.fdapn.exception.NotFoundException;
-import com.fdapn.model.Token;
-import com.fdapn.model.TokenDetails;
-import com.fdapn.model.TokenType;
-import com.fdapn.model.User;
+import com.fdapn.model.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,12 +31,13 @@ public class AuthenticationService {
         if (!passwordValid(request.getPassword())) {
             throw new InvalidPasswordException("Please enter valid password.");
         }
+        Role userRole = request.getRole() != null ? request.getRole() : Role.USER;
         User user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(userRole)
                 .build();
         User savedUser = repository.save(user);
         TokenDetails jwtToken = jwtService.generateToken(user);
