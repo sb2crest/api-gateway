@@ -5,6 +5,7 @@ import com.fdapn.dao.TokenRepository;
 import com.fdapn.dao.UserRepository;
 import com.fdapn.exception.InvalidPasswordException;
 import com.fdapn.exception.NotFoundException;
+import com.fdapn.exception.UserAlreadyExistsException;
 import com.fdapn.model.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,6 +29,9 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     public AuthenticationResponse register(RegisterRequest request) {
+        if (userExists(request)) {
+            throw new UserAlreadyExistsException("User already exists. Please login.");
+        }
         if (!passwordValid(request.getPassword())) {
             throw new InvalidPasswordException("Please enter valid password.");
         }
@@ -127,4 +131,8 @@ public class AuthenticationService {
         return password != null && password.length() >= 8 &&
                 password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\[\\]{};':\"\\\\|,.<>/?]).{8,}$");
     }
+    private boolean userExists(RegisterRequest request) {
+        return repository.findByEmail(request.getEmail()).isPresent();
+    }
+
 }
