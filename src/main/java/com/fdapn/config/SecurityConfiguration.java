@@ -21,8 +21,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static com.fdapn.model.Role.ADMIN;
 import static com.fdapn.model.Role.MANAGER;
@@ -53,11 +57,20 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(config-> config.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            CorsConfiguration configuration = new CorsConfiguration();
+                            configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+                            configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            configuration.setAllowedHeaders(Arrays.asList("*"));
+                            configuration.setAllowCredentials(true);
+                            return configuration;
+                        })
+                )
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
-                                .requestMatchers(GET,"/csrf/token").permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
@@ -70,5 +83,17 @@ public class SecurityConfiguration {
                 )
         ;
         return http.build();
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

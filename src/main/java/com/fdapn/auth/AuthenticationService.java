@@ -39,6 +39,7 @@ public class AuthenticationService {
         User user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
+                .userId(validateUserId(request.getUserId()))
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(userRole)
@@ -50,6 +51,7 @@ public class AuthenticationService {
         String tokenExpiration = jwtToken.getExpirationTime();
         String refreshTokenExpiration = refreshToken.getExpirationTime();
         return AuthenticationResponse.builder()
+                .userId(user.getUserId())
                 .accessToken(jwtToken.getToken())
                 .refreshToken(refreshToken.getToken())
                 .tokenExpired(tokenExpiration)
@@ -69,6 +71,7 @@ public class AuthenticationService {
         String tokenExpiration = jwtToken.getExpirationTime();
         String refreshTokenExpiration = refreshToken.getExpirationTime();
         return AuthenticationResponse.builder()
+                .userId(user.getUserId())
                 .accessToken(jwtToken.getToken())
                 .refreshToken(refreshToken.getToken())
                 .tokenExpired(tokenExpiration)
@@ -133,6 +136,12 @@ public class AuthenticationService {
     }
     private boolean userExists(RegisterRequest request) {
         return repository.findByEmail(request.getEmail()).isPresent();
+    }
+    public String validateUserId(String userId) throws IllegalArgumentException {
+        if (userId == null || !userId.matches("^[a-zA-Z0-9]{10}$")) {
+            throw new IllegalArgumentException("Invalid User ID. The field should contain 10 alphanumeric characters.");
+        }
+        return userId;
     }
 
 }
