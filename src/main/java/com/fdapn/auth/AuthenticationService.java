@@ -52,6 +52,7 @@ public class AuthenticationService {
         String refreshTokenExpiration = refreshToken.getExpirationTime();
         return AuthenticationResponse.builder()
                 .userId(user.getUserId())
+                .role(String.valueOf(userRole))
                 .accessToken(jwtToken.getToken())
                 .refreshToken(refreshToken.getToken())
                 .tokenExpired(tokenExpiration)
@@ -72,6 +73,7 @@ public class AuthenticationService {
         String refreshTokenExpiration = refreshToken.getExpirationTime();
         return AuthenticationResponse.builder()
                 .userId(user.getUserId())
+                .role(user.getRole().name())
                 .accessToken(jwtToken.getToken())
                 .refreshToken(refreshToken.getToken())
                 .tokenExpired(tokenExpiration)
