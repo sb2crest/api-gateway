@@ -39,7 +39,7 @@ public class AuthenticationService {
         User user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
-                .userId(validateUserId(request.getUserId()))
+                .userId(validateUserId(request.getUserId().toLowerCase()))
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(userRole)
@@ -137,7 +137,7 @@ public class AuthenticationService {
                 password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\[\\]{};':\"\\\\|,.<>/?]).{8,}$");
     }
     private boolean userExists(RegisterRequest request) {
-        return repository.findByEmail(request.getEmail()).isPresent();
+        return repository.findByEmailOrUserId(request.getEmail(),request.getUserId().toLowerCase()).isPresent();
     }
     public String validateUserId(String userId) throws IllegalArgumentException {
         if (userId == null || !userId.matches("^[a-zA-Z0-9]{10}$")) {
@@ -145,5 +145,4 @@ public class AuthenticationService {
         }
         return userId;
     }
-
 }
