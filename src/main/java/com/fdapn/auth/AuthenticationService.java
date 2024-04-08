@@ -7,12 +7,13 @@ import com.fdapn.exception.InvalidPasswordException;
 import com.fdapn.exception.NotFoundException;
 import com.fdapn.exception.UserAlreadyExistsException;
 import com.fdapn.model.*;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationService {
     private final UserRepository repository;
     private final TokenRepository tokenRepository;
@@ -61,9 +63,24 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        User user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new NotFoundException("User not found with email  - {}: " + request.getEmail()));
+        String email = request.getEmail();
+        String userId = request.getUserId();
+        String password = request.getPassword();
+
+        User user = null;
+
+        if (StringUtils.isNotBlank(email)) {
+            user = repository.findByEmail(email)
+                    .orElseThrow(() -> new NotFoundException("User not found with email: " + email));
+        } else if (StringUtils.isNotBlank(userId)) {
+            user = repository.findByUserId(userId)
+                    .orElseThrow(() -> new NotFoundException("User not found with userId: " + userId));
+        } else {
+            throw new NotFoundException("Email or userId must be provided");
+        }
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new InvalidPasswordException("Invalid password");
+        }
 
         TokenDetails jwtToken = jwtService.generateToken(user);
         TokenDetails refreshToken = jwtService.generateRefreshToken(user);
