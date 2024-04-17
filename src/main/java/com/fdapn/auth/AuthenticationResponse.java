@@ -16,6 +16,7 @@ public class AuthenticationResponse {
   private String role;
   @JsonProperty("access_token")
   private String accessToken;
+  private Boolean isPostDetails;
   @JsonProperty("refresh_token")
   private String refreshToken;
   @JsonProperty("token_expired")

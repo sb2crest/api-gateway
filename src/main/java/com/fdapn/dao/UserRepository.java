@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
   Optional<User> findByEmail(@Param("email") String email);
   @Query("SELECT u FROM User u WHERE u.userId = :userId")
   Optional<User> findByUserId(@Param("userId") String userId);
-  @Query("SELECT u FROM User u WHERE u.email = :email OR u.userId = :userId")
+  @Query("SELECT u FROM User u WHERE (:email is null or u.email = :email) AND (:userId is null or u.userId = :userId)")
   Optional<User> findByEmailOrUserId(@Param("email") String email, @Param("userId") String userId);
 
 }
