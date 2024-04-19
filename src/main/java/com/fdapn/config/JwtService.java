@@ -72,7 +72,9 @@ public class JwtService {
     final String username = extractUsername(token);
     return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
   }
-
+  public void validateToken(final String token) {
+    Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
+  }
   private boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }

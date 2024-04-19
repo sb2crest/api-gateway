@@ -165,4 +165,7 @@ public class AuthenticationService {
         }
         return userId;
     }
+    public void validateToken(String token) {
+        jwtService.validateToken(token);
+    }
 }
