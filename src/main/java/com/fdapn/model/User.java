@@ -29,7 +29,8 @@ public class User implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    @Column(length = 1000)
+    private String notificationEmails;
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 

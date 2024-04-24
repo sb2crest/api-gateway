@@ -42,9 +42,10 @@ public class AuthenticationService {
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .userId(validateUserId(request.getUserId().toLowerCase()))
-                .isPortDetails(request.getIsPortDetails())
+                .isPortDetails(request.getIsPortDetails() != null)
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .notificationEmails(request.getNotificationMails())
                 .role(userRole)
                 .build();
         User savedUser = repository.save(user);
