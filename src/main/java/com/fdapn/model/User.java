@@ -24,6 +24,7 @@ public class User implements UserDetails {
     private String lastname;
     @Column(name = "user_Identifier")
     private String userId;
+    private String uniqueUserIdentifier;
     private Boolean isPortDetails;
     private String email;
     private String password;

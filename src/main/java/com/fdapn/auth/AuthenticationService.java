@@ -7,6 +7,7 @@ import com.fdapn.exception.InvalidPasswordException;
 import com.fdapn.exception.NotFoundException;
 import com.fdapn.exception.UserAlreadyExistsException;
 import com.fdapn.model.*;
+import com.fdapn.service.IDGenerator;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +31,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    public AuthenticationResponse register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
         if (userExists(request)) {
             throw new UserAlreadyExistsException("User already exists. Please login.");
         }
@@ -44,25 +45,15 @@ public class AuthenticationService {
                 .userId(validateUserId(request.getUserId().toLowerCase()))
                 .isPortDetails(request.getIsPortDetails() != null)
                 .email(request.getEmail())
+                .uniqueUserIdentifier(IDGenerator.generateUUID(request.getUserId()).toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .notificationEmails(request.getNotificationMails())
                 .role(userRole)
                 .build();
         User savedUser = repository.save(user);
         TokenDetails jwtToken = jwtService.generateToken(user);
-        TokenDetails refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(savedUser, jwtToken.getToken());
-        String tokenExpiration = jwtToken.getExpirationTime();
-        String refreshTokenExpiration = refreshToken.getExpirationTime();
-        return AuthenticationResponse.builder()
-                .userId(user.getUserId())
-                .role(String.valueOf(userRole))
-                .isPortDetails(user.getIsPortDetails())
-                .accessToken(jwtToken.getToken())
-                .refreshToken(refreshToken.getToken())
-                .tokenExpired(tokenExpiration)
-                .refreshTokenExpired(refreshTokenExpiration)
-                .build();
+        return "Registration completed successfully";
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -93,6 +84,7 @@ public class AuthenticationService {
         String refreshTokenExpiration = refreshToken.getExpirationTime();
         return AuthenticationResponse.builder()
                 .userId(user.getUserId())
+                .uniqueUserIdentifier(user.getUniqueUserIdentifier())
                 .role(user.getRole().name())
                 .isPortDetails(user.getIsPortDetails())
                 .accessToken(jwtToken.getToken())
