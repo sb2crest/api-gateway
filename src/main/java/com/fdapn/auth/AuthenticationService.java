@@ -150,7 +150,16 @@ public class AuthenticationService {
                 password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\[\\]{};':\"\\\\|,.<>/?]).{8,}$");
     }
     private boolean userExists(RegisterRequest request) {
-        return repository.findByEmailOrUserId(request.getEmail(),request.getUserId().toLowerCase()).isPresent();
+        String userId = request.getUserId();
+        String email = request.getEmail();
+
+        if (repository.findByUserId(userId).isPresent()) {
+            return true;
+        }
+        if (repository.findByEmail(email).isPresent()) {
+            return true;
+        }
+        return false;
     }
     public String validateUserId(String userId) throws IllegalArgumentException {
         if (userId == null || !userId.matches("^[a-zA-Z0-9]{10}$")) {
