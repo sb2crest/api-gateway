@@ -43,7 +43,7 @@ public class AuthenticationService {
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .userId(validateUserId(request.getUserId().toLowerCase()))
-                .isPortDetails(request.getIsPortDetails() != null)
+                .isPortDetails(Boolean.TRUE.equals(request.getIsPortDetails()))
                 .email(request.getEmail())
                 .uniqueUserIdentifier(IDGenerator.generateUUID(request.getUserId()).toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
